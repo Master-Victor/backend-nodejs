@@ -1,0 +1,161 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  refreshTokens RefreshToken[]
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id        String   @id @default(cuid())
+  token     String   @unique
+  userId    String
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("refresh_tokens")
+}
+
+model Director {
+  id        String   @id @default(cuid())
+  name      String
+  biography String?
+  birthDate DateTime?
+  country   String?
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  movies   Movie[]
+  episodes Episode[]
+
+  @@map("directors")
+}
+
+model Actor {
+  id        String   @id @default(cuid())
+  name      String
+  biography String?
+  birthDate DateTime?
+  country   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  movieActors  MovieActor[]
+  tvShowActors TvShowActor[]
+
+  @@map("actors")
+}
+
+model Movie {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  genre       String
+  releaseDate DateTime
+  duration    Int // En minutos
+  rating      Float?
+  directorId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  director Director     @relation(fields: [directorId], references: [id])
+  actors   MovieActor[]
+
+  @@map("movies")
+}
+
+model MovieActor {
+  id        String @id @default(cuid())
+  movieId   String
+  actorId   String
+  character String
+
+  movie Movie @relation(fields: [movieId], references: [id], onDelete: Cascade)
+  actor Actor @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@unique([movieId, actorId])
+  @@map("movie_actors")
+}
+
+model TvShow {
+  id          String   @id @default(cuid())
+  title       String
+  description String?
+  genre       String
+  startDate   DateTime
+  endDate     DateTime?
+  status      String   @default("ongoing") // "ongoing", "ended", "canceled"
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  seasons Season[]
+  actors  TvShowActor[]
+
+  @@map("tv_shows")
+}
+
+model TvShowActor {
+  id        String @id @default(cuid())
+  tvShowId  String
+  actorId   String
+  character String
+
+  tvShow TvShow @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  actor  Actor  @relation(fields: [actorId], references: [id], onDelete: Cascade)
+
+  @@unique([tvShowId, actorId])
+  @@map("tv_show_actors")
+}
+
+model Season {
+  id           String @id @default(cuid())
+  tvShowId     String
+  seasonNumber Int
+  title        String?
+  description  String?
+  releaseDate  DateTime?
+
+  tvShow   TvShow    @relation(fields: [tvShowId], references: [id], onDelete: Cascade)
+  episodes Episode[]
+
+  @@unique([tvShowId, seasonNumber])
+  @@map("seasons")
+}
+
+model Episode {
+  id            String   @id @default(cuid())
+  seasonId      String
+  episodeNumber Int
+  title         String
+  description   String?
+  duration      Int // in minutes
+  airDate       DateTime?
+  directorId    String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  season   Season    @relation(fields: [seasonId], references: [id], onDelete: Cascade)
+  director Director? @relation(fields: [directorId], references: [id])
+
+  @@unique([seasonId, episodeNumber])
+  @@map("episodes")
+}
