@@ -101,6 +101,12 @@ The API will be available at `http://localhost:3000`
 - `GET /api/actors/:id` - Get specific actor
 - `POST /api/actors` - Create new actor
 
+### Directors
+- `GET /api/directors` - Get all directors
+- `GET /api/directors/:id` - Get specific director
+- `POST /api/directors` - Create new director
+
+
 ## 🗄️ Database Schema
 
 The API uses a relational database with the following main entities:

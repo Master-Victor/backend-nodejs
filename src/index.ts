@@ -7,6 +7,7 @@ import { movieRoutes } from './routes/movie.routes';
 import { tvShowRoutes } from './routes/tvShow.routes';
 import { actorRoutes } from './routes/actor.routes';
 import { errorHandler } from './middleware/errorHandler';
+import { directorRoutes } from './routes/director.routes';
 
 // Cargo las variables de entorno
 dotenv.config();
@@ -34,6 +35,7 @@ app.use('/api/auth', authRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/tv-shows', tvShowRoutes);
 app.use('/api/actors', actorRoutes);
+app.use('/api/directors', directorRoutes); // Assuming director.routes exports a router
 
 // Error 404
 app.use('*', (req, res) => {
