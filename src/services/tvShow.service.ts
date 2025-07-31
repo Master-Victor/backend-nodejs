@@ -92,3 +92,37 @@ export const createTvShow = async (data: any) => {
     }
   });
 };
+
+export const updateTvShow = async (id: string, data: any) => {
+  const { actors, ...rest } = data;
+
+  if (actors && actors.length > 0) {
+    const actorIds = actors.map((a: any) => a.actorId);
+    const existing = await prisma.actor.findMany({ where: { id: { in: actorIds } } });
+    if (existing.length !== actorIds.length) return null;
+  }
+
+  return prisma.tvShow.update({
+    where: { id },
+    data: {
+      ...rest,
+      startDate: new Date(rest.startDate),
+      endDate: rest.endDate ? new Date(rest.endDate) : null,
+      actors: actors ? {
+        create: actors.map((a: any) => ({
+          actorId: a.actorId,
+          character: a.character
+        }))
+      } : undefined
+    },
+    include: {
+      actors: { include: { actor: true } }
+    }
+  });
+};
+
+export const deleteTvShow = (id: string) => {
+  return prisma.tvShow.delete({
+    where: { id }
+  });
+};

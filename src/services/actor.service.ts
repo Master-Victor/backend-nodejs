@@ -88,3 +88,26 @@ export const createActorService = async (data: {
     }
   });
 };
+
+export const updateActorService = async (id: string, data: {
+  name?: string;
+  biography?: string;
+  birthDate?: string;
+  country?: string;
+}) => {
+  return prisma.actor.update({
+    where: { id },
+    data: {
+      name: data.name,
+      biography: data.biography,
+      birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+      country: data.country
+    }
+  });
+};
+
+export const deleteActorService = async (id: string) => {
+  return prisma.actor.delete({
+    where: { id }
+  });
+};

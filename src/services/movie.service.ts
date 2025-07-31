@@ -106,3 +106,58 @@ export const createMovieService = async (data: any) => {
     }
   });
 };
+
+export const updateMovieService = async (id: string, data: any) => {
+  const { title, description, genre, releaseDate, duration, rating, directorId, actors } = data;
+
+  const movie = await prisma.movie.findUnique({ where: { id } });
+  if (!movie) throw new Error('MOVIE_NOT_FOUND');
+
+  if (directorId) {
+    const director = await prisma.director.findUnique({ where: { id: directorId } });
+    if (!director) throw new Error('INVALID_DIRECTOR');
+  }
+
+  if (actors && actors.length > 0) {
+    const actorIds = actors.map((a: any) => a.actorId);
+    const existingActors = await prisma.actor.findMany({ where: { id: { in: actorIds } } });
+    if (existingActors.length !== actorIds.length) throw new Error('INVALID_ACTORS');
+  }
+
+  return prisma.movie.update({
+    where: { id },
+    data: {
+      title,
+      description,
+      genre,
+      releaseDate: new Date(releaseDate),
+      duration,
+      rating,
+      directorId,
+      actors: actors ? {
+        deleteMany: {},
+        create: actors.map((a: any) => ({
+          actorId: a.actorId,
+          character: a.character
+        }))
+      } : undefined
+    },
+    include: {
+      director: { select: { id: true, name: true, country: true } },
+      actors: {
+        include: {
+          actor: { select: { id: true, name: true, country: true } }
+        }
+      }
+    }
+  });
+};
+
+export const deleteMovieService = async (id: string) => {
+  const movie = await prisma.movie.findUnique({ where: { id } });
+  if (!movie) throw new Error('MOVIE_NOT_FOUND');
+
+  return prisma.movie.delete({
+    where: { id }
+  });
+};

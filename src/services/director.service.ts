@@ -48,3 +48,28 @@ export const createDirectorService = async (data: {
   });
   return director;
 };
+
+export const updateDirectorService = async (id: string, data: {
+  name?: string,
+  biography?: string,
+  birthDate?: string,
+  country?: string
+}) => {
+  const director = await prisma.director.update({
+    where: { id },
+    data: {
+      name: data.name,
+      biography: data.biography,
+      birthDate: data.birthDate ? new Date(data.birthDate) : undefined,
+      country: data.country
+    }
+  });
+  return director;
+};
+
+export const deleteDirectorService = async (id: string) => {
+  const director = await prisma.director.delete({
+    where: { id }
+  });
+  return director;
+};
